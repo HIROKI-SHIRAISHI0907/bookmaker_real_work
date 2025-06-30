@@ -18,6 +18,7 @@ import dev.application.entity.AverageStatisticsTeamDetailEntity;
 
 /**
  * 各特徴量平均データ順位版整理CSV作成ロジック
+ * TIMEデータに対してCollectScoringDataStandardValueLogicを呼び出す
  * @author shiraishitoshio
  *
  */
@@ -47,6 +48,11 @@ public class AverageStatsDetailCsvLogic {
 	 * CSV作成パス
 	 */
 	private static final String MAKE_FILE_PATH = "/Users/shiraishitoshio/bookmaker/average_stats/";
+
+	/**
+	 * ロックオブジェクト
+	 */
+	private static final Object lock = new Object();
 
 	/**
 	 * 実行
@@ -431,6 +437,20 @@ public class AverageStatsDetailCsvLogic {
 					csv.execute(csv_names, null, headerOtherList, bodyOtherList);
 					System.out.println("作成しました。: (" + country + ", " + league + ", "
 							+ situation + ", " + teamWhere + ", " + feature + ")");
+
+					// bodyOtherListをCollectScoringDataStandardValueLogicに渡す(syncronized)
+					if (!SITUATION_ALL.equals(situation) && !SITUATION_GAME.equals(situation)
+							&& !SITUATION_HALF1st.equals(situation) && !SITUATION_HALF2nd.equals(situation)) {
+						synchronized (lock) {
+							try {
+								CollectScoringDataStandardValueLogic collectScoringDataStandardValueLogic = new CollectScoringDataStandardValueLogic();
+								collectScoringDataStandardValueLogic.execute(teamWhere, feature, headerOtherList,
+										bodyOtherList);
+							} catch (Exception e) {
+								System.err.println("synchronized lock err: " + e);
+							}
+						}
+					}
 				}
 			}
 

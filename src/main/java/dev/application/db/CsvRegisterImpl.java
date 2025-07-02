@@ -15,6 +15,7 @@ import dev.application.entity.BookDataInsertEntity;
 import dev.application.entity.ClassifyResultDataDetailEntity;
 import dev.application.entity.ClassifyResultDataEntity;
 import dev.application.entity.CollectRangeScoreEntity;
+import dev.application.entity.CollectScoringStandardDataEntity;
 import dev.application.entity.ConditionResultDataEntity;
 import dev.application.entity.CorrelationDetailEntity;
 import dev.application.entity.CorrelationEntity;
@@ -188,6 +189,9 @@ public class CsvRegisterImpl implements CsvRegisterIF {
 			} else if (!dataList.isEmpty() && dataList.get(0) instanceof CollectRangeScoreEntity) {
 				List<CollectRangeScoreEntity> dataConvertList = (List<CollectRangeScoreEntity>) dataList;
 				workList = convertCollectRangeScoreEntityInsertList(dataConvertList);
+			} else if (!dataList.isEmpty() && dataList.get(0) instanceof CollectScoringStandardDataEntity) {
+				List<CollectScoringStandardDataEntity> dataConvertList = (List<CollectScoringStandardDataEntity>) dataList;
+				workList = convertCollectScoringStandardDataEntityInsertList(dataConvertList);
 			}
 		}
 		while (true) {
@@ -2051,6 +2055,62 @@ public class CsvRegisterImpl implements CsvRegisterIF {
             returnList.add(entity.get(i).getTime70_80());
             returnList.add(entity.get(i).getTime80_90());
             returnList.add(entity.get(i).getTime90_100());
+
+            String[] list = new String[returnList.size()];
+            for (int j = 0; j < returnList.size(); j++) {
+                list[j] = returnList.get(j);
+            }
+            returnAllList.add(list);
+        }
+        return returnAllList;
+    }
+
+    /**
+     * CollectScoringStandardDataEntityをString型のリストに変換
+     * @param entity CollectScoringStandardDataEntity型のリスト
+     * @return String型のリスト
+     * @throws Exception
+     */
+    private List<String[]> convertCollectScoringStandardDataEntityInsertList(
+            List<CollectScoringStandardDataEntity> entity)
+            throws Exception {
+        List<String[]> returnAllList = new ArrayList<String[]>();
+        for (int i = 0; i < entity.size(); i++) {
+            List<String> returnList = new ArrayList<String>();
+            returnList.add(entity.get(i).getDataSituationKey());
+            returnList.add(entity.get(i).getTimeKey());
+            returnList.add(entity.get(i).getTeam());
+            returnList.add(entity.get(i).getHa());
+            returnList.add(entity.get(i).getCountry());
+            returnList.add(entity.get(i).getLeague());
+            returnList.add(entity.get(i).getScoreDistribution());
+            returnList.add(entity.get(i).getExpStat()); // ExpStatのデータ
+            returnList.add(entity.get(i).getDonationStat()); // DonationStatのデータ
+            returnList.add(entity.get(i).getShootAllStat()); // ShootAllStatのデータ
+            returnList.add(entity.get(i).getShootInStat()); // ShootInStatのデータ
+            returnList.add(entity.get(i).getShootOutStat()); // ShootOutStatのデータ
+            returnList.add(entity.get(i).getBlockShootStat()); // BlockShootStatのデータ
+            returnList.add(entity.get(i).getBigChanceStat()); // BigChanceStatのデータ
+            returnList.add(entity.get(i).getCornerStat()); // CornerStatのデータ
+            returnList.add(entity.get(i).getBoxShootInStat()); // BoxShootInStatのデータ
+            returnList.add(entity.get(i).getBoxShootOutStat()); // BoxShootOutStatのデータ
+            returnList.add(entity.get(i).getGoalPostStat()); // GoalPostStatのデータ
+            returnList.add(entity.get(i).getGoalHeadStat()); // GoalHeadStatのデータ
+            returnList.add(entity.get(i).getKeeperSaveStat()); // KeeperSaveStatのデータ
+            returnList.add(entity.get(i).getFreeKickStat()); // FreeKickStatのデータ
+            returnList.add(entity.get(i).getOffsideStat()); // OffsideStatのデータ
+            returnList.add(entity.get(i).getFoulStat()); // FoulStatのデータ
+            returnList.add(entity.get(i).getYellowCardStat()); // YellowCardStatのデータ
+            returnList.add(entity.get(i).getRedCardStat()); // RedCardStatのデータ
+            returnList.add(entity.get(i).getSlowInStat()); // SlowInStatのデータ
+            returnList.add(entity.get(i).getBoxTouchStat()); // BoxTouchStatのデータ
+            returnList.add(entity.get(i).getPassCountStat()); // PassCountStatのデータ
+            returnList.add(entity.get(i).getFinalThirdPassCountStat()); // FinalThirdPassCountStatのデータ
+            returnList.add(entity.get(i).getCrossCountStat()); // CrossCountStatのデータ
+            returnList.add(entity.get(i).getTackleCountStat()); // TackleCountStatのデータ
+            returnList.add(entity.get(i).getClearCountStat()); // ClearCountStatのデータ
+            returnList.add(entity.get(i).getInterceptCountStat()); // InterceptCountStatのデータ
+
 
             String[] list = new String[returnList.size()];
             for (int j = 0; j < returnList.size(); j++) {

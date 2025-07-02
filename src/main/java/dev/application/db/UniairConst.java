@@ -167,6 +167,11 @@ public class UniairConst {
 	public static final String BM_M029 = "M029";
 
 	/**
+	 * スコア水準マスタ
+	 */
+	public static final String BM_M030 = "M030";
+
+	/**
 	 * BMCSV更新情報マスタ
 	 */
 	public static final String BM_M097 = "M097";

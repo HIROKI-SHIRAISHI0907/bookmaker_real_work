@@ -441,15 +441,15 @@ public class AverageStatsDetailCsvLogic {
 					// bodyOtherListをCollectScoringDataStandardValueLogicに渡す(syncronized)
 					if (!SITUATION_ALL.equals(situation) && !SITUATION_GAME.equals(situation)
 							&& !SITUATION_HALF1st.equals(situation) && !SITUATION_HALF2nd.equals(situation)) {
-						synchronized (lock) {
-							try {
-								CollectScoringDataStandardValueLogic collectScoringDataStandardValueLogic = new CollectScoringDataStandardValueLogic();
-								collectScoringDataStandardValueLogic.execute(teamWhere, feature, headerOtherList,
-										bodyOtherList);
-							} catch (Exception e) {
-								System.err.println("synchronized lock err: " + e);
-							}
-						}
+//						synchronized (lock) {
+//							try {
+//								CollectScoringDataStandardValueLogic collectScoringDataStandardValueLogic = new CollectScoringDataStandardValueLogic();
+//								collectScoringDataStandardValueLogic.execute(csv_names, teamWhere, feature, headerOtherList,
+//										bodyOtherList);
+//							} catch (Exception e) {
+//								System.err.println("synchronized lock err: " + e);
+//							}
+//						}
 					}
 				}
 			}

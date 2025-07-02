@@ -1,5 +1,6 @@
 package dev.application.domain.service.it;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -15,18 +16,48 @@ import dev.application.domain.service.it.common.CSVReaderBase;
 public class CollectScoringDataStandardValueLogicTest extends CSVReaderBase {
 
 	@Test
-	public void test() {
-		final String team = "サンフレッチェ広島";
-		final String stats = "exp_stat";
-		String testPath = "/Users/shiraishitoshio/bookmaker/average_stats/日本-J1 リーグ/"
-				+ "日本-J1 リーグ-" + team + "-" + stats + "-TIME.csv";
-		readCSV(testPath);
-		List<String> headerList = getHeaderList();
-		List<List<String>> bodyList = getBodyList();
+	public void test1() {
+		final String team1 = "サンフレッチェ広島";
+		final String stats1 = "exp_stat";
+		String testPath1 = "/Users/shiraishitoshio/bookmaker/average_stats/日本-J1 リーグ/"
+				+ "日本-J1 リーグ-" + team1 + "-" + stats1 + "-TIME.csv";
+		readCSV(testPath1);
+		String[] testPath_sp1 = testPath1.split("/");
+		testPath1 = testPath_sp1[testPath_sp1.length - 1].replace(".csv", "");
+		List<String> headerList1 = getHeaderList();
+		List<List<String>> bodyList1 = getBodyList();
+		final String team2 = "ヴィッセル神戸";
+		final String stats2 = "exp_stat";
+		String testPath2 = "/Users/shiraishitoshio/bookmaker/average_stats/日本-J1 リーグ/"
+				+ "日本-J1 リーグ-" + team1 + "-" + stats1 + "-TIME.csv";
+		readCSV(testPath2);
+		String[] testPath_sp2 = testPath2.split("/");
+		testPath2 = testPath_sp2[testPath_sp2.length - 1].replace(".csv", "");
+		List<String> headerList2 = getHeaderList();
+		List<List<String>> bodyList2 = getBodyList();
 
 		CollectScoringDataStandardValueLogic collectScoringDataStandardValueLogic
 			= new CollectScoringDataStandardValueLogic();
-		collectScoringDataStandardValueLogic.execute(team, stats, headerList, bodyList);
+		collectScoringDataStandardValueLogic.execute(testPath1, team1, stats1, headerList1, bodyList1,
+				testPath2, team2, stats2, headerList2, bodyList2);
+	}
+
+	@Test
+	public void test2() {
+		final String team1 = "サンフレッチェ広島";
+		final String stats1 = "exp_stat";
+		String testPath1 = "/Users/shiraishitoshio/bookmaker/average_stats/日本-J1 リーグ/"
+				+ "日本-J1 リーグ-" + team1 + "-" + stats1 + "-TIME.csv";
+		readCSV(testPath1);
+		String[] testPath_sp1 = testPath1.split("/");
+		testPath1 = testPath_sp1[testPath_sp1.length - 1].replace(".csv", "");
+		List<String> headerList1 = getHeaderList();
+		List<List<String>> bodyList1 = getBodyList();
+
+		CollectScoringDataStandardValueLogic collectScoringDataStandardValueLogic
+			= new CollectScoringDataStandardValueLogic();
+		collectScoringDataStandardValueLogic.execute(testPath1, team1, stats1, headerList1, bodyList1,
+				null, null, null, new ArrayList<>(), new ArrayList<List<String>>());
 	}
 
 }

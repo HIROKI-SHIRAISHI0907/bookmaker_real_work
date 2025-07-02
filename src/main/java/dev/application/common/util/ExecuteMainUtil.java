@@ -458,6 +458,21 @@ public class ExecuteMainUtil {
 	}
 
 	/**
+	 * スネーク方式の文字列をキャメル方式に直す
+	 * @param snake
+	 * @return camel
+	 */
+	public static String convertToCamelCase(String snake) {
+	    String[] parts = snake.split("_");
+	    StringBuilder camel = new StringBuilder(parts[0]); // 最初はそのまま
+	    for (int i = 1; i < parts.length; i++) {
+	        camel.append(parts[i].substring(0, 1).toUpperCase())
+	             .append(parts[i].substring(1));
+	    }
+	    return camel.toString();
+	}
+
+	/**
 	 * 国とリーグに分ける
 	 * @param text
 	 * @return

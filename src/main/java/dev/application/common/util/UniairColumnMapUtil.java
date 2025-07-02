@@ -54,6 +54,7 @@ public class UniairColumnMapUtil {
 		ListMstDetailMap.put(UniairConst.BM_M027, "average_statistics_csv_tmp_data");
 		ListMstDetailMap.put(UniairConst.BM_M028, "average_statistics_team_detail_data");
 		ListMstDetailMap.put(UniairConst.BM_M029, "collect_range_score");
+		ListMstDetailMap.put(UniairConst.BM_M030, "collect_scoring_standard_data");
 		ListMstDetailMap.put(UniairConst.BM_M097, "upd_csv_info");
 		ListMstDetailMap.put(UniairConst.BM_M098, "file_chk_tmp");
 		ListMstDetailMap.put(UniairConst.BM_M099, "file_chk");
@@ -4680,6 +4681,208 @@ public class UniairColumnMapUtil {
 		columnKeyMap.put(UniairConst.BM_M029, columnSceneCardMap);
 
 		columnSceneCardMap = new LinkedHashMap<>();
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("ID", "id");
+		columnRestMap.put("INT(11)88", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("データ状況キー", "data_situation_key");
+		columnRestMap.put("VARCHAR(10)89", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("時間キー", "time_key");
+		columnRestMap.put("VARCHAR(10)89", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("チーム", "team");
+		columnRestMap.put("VARCHAR(10)90", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("HorA", "ha");
+		columnRestMap.put("VARCHAR(10)91", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("国", "country");
+		columnRestMap.put("VARCHAR(40)92", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("リーグ", "league");
+		columnRestMap.put("VARCHAR(40)93", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("スコア分布", "score_distribution");
+		columnRestMap.put("VARCHAR(40)94", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		// exp_stat
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("ホーム期待値の統計情報", "exp_stat");
+		columnRestMap.put("VARCHAR(255)05", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		// donation_stat
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("ホームポゼッションの統計情報", "donation_stat");
+		columnRestMap.put("VARCHAR(255)07", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		// away_donation_stat
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("ホームシュート数の統計情報", "shoot_all_stat");
+		columnRestMap.put("VARCHAR(255)09", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		// away_shoot_all_stat
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("ホーム枠内シュートの統計情報", "shoot_in_stat");
+		columnRestMap.put("VARCHAR(255)11", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		// away_shoot_in_stat
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("ホーム枠外シュートの統計情報", "shoot_out_stat");
+		columnRestMap.put("VARCHAR(255)13", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		// away_shoot_out_stat
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("ホームブロックシュートの統計情報", "block_shoot_stat");
+		columnRestMap.put("VARCHAR(255)15", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		// away_block_shoot_stat
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("ホームビッグチャンスの統計情報", "big_chance_stat");
+		columnRestMap.put("VARCHAR(255)17", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		// away_big_chance_stat
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("ホームコーナーキックの統計情報", "corner_stat");
+		columnRestMap.put("VARCHAR(255)19", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		// away_corner_stat
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("ホームボックス内シュートの統計情報", "box_shoot_in_stat");
+		columnRestMap.put("VARCHAR(255)21", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		// away_box_shoot_in_stat
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("ホームボックス外シュートの統計情報", "box_shoot_out_stat");
+		columnRestMap.put("VARCHAR(255)23", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		// away_box_shoot_out_stat
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("ホームゴールポストの統計情報", "goal_post_stat");
+		columnRestMap.put("VARCHAR(255)25", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		// away_goal_post_stat
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("ホームヘディングゴールの統計情報", "goal_head_stat");
+		columnRestMap.put("VARCHAR(255)27", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		// away_goal_head_stat
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("ホームキーパーセーブの統計情報", "keeper_save_stat");
+		columnRestMap.put("VARCHAR(255)29", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		// away_keeper_save_stat
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("ホームフリーキックの統計情報", "free_kick_stat");
+		columnRestMap.put("VARCHAR(255)31", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		// away_free_kick_stat (32)
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("ホームオフサイドの統計情報", "offside_stat");
+		columnRestMap.put("VARCHAR(255)33", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		// away_offside_stat (34)
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("ホームファウルの統計情報", "foul_stat");
+		columnRestMap.put("VARCHAR(255)35", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		// away_foul_stat (36)
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("ホームイエローカードの統計情報", "yellow_card_stat");
+		columnRestMap.put("VARCHAR(255)37", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		// away_yellow_card_stat (38)
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("ホームレッドカードの統計情報", "red_card_stat");
+		columnRestMap.put("VARCHAR(255)39", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		// away_red_card_stat (40)
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("ホームスローインの統計情報", "slow_in_stat");
+		columnRestMap.put("VARCHAR(255)41", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		// away_slow_in_stat (42)
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("ホームボックスタッチの統計情報", "box_touch_stat");
+		columnRestMap.put("VARCHAR(255)43", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		// away_box_touch_stat (44)
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("ホームパス数の統計情報", "pass_count_stat");
+		columnRestMap.put("VARCHAR(255)45", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		// away_pass_count_stat (46)
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("ホームファイナルサードパス数の統計情報", "final_third_pass_count_stat");
+		columnRestMap.put("VARCHAR(255)47", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		// away_final_third_pass_count_stat (48)
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("ホームクロス数の統計情報", "cross_count_stat");
+		columnRestMap.put("VARCHAR(255)49", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		// away_cross_count_stat (50)
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("ホームタックル数の統計情報", "tackle_count_stat");
+		columnRestMap.put("VARCHAR(255)51", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		// clear_count_stat (53)
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("ホームクリア数の統計情報", "clear_count_stat");
+		columnRestMap.put("VARCHAR(255)53", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		// intercept_count_stat (55)
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnMainMap.put("ホームインターセプト数の統計情報", "intercept_count_stat");
+		columnRestMap.put("VARCHAR(255)55", "");
+		columnSceneCardMap.put(columnMainMap, columnRestMap);
+		// away_intercept_count_stat (56)
+		columnRestMap = new HashMap<>();
+		columnMainMap = new HashMap<>();
+		columnKeyMap.put(UniairConst.BM_M030, columnSceneCardMap);
+
+		columnSceneCardMap = new LinkedHashMap<>();
 		columnMainMap.put("ID", "id");
 		columnRestMap.put("INT(11)01", "");
 		columnSceneCardMap.put(columnMainMap, columnRestMap);
@@ -4797,6 +5000,11 @@ public class UniairColumnMapUtil {
 		primaryMap.put(UniairConst.BM_M023, columnPrimaryList);
 		primaryMap.put(UniairConst.BM_M024, columnPrimaryList);
 		primaryMap.put(UniairConst.BM_M025, columnPrimaryList);
+		primaryMap.put(UniairConst.BM_M026, columnPrimaryList);
+		primaryMap.put(UniairConst.BM_M027, columnPrimaryList);
+		primaryMap.put(UniairConst.BM_M028, columnPrimaryList);
+		primaryMap.put(UniairConst.BM_M029, columnPrimaryList);
+		primaryMap.put(UniairConst.BM_M030, columnPrimaryList);
 		primaryMap.put(UniairConst.BM_M097, columnPrimaryList);
 		primaryMap.put(UniairConst.BM_M098, columnPrimaryList);
 		primaryMap.put(UniairConst.BM_M099, columnPrimaryList);

@@ -14,21 +14,21 @@ import java.util.List;
 public abstract class CSVReaderBase {
 
 	/**
-	 * ヘッダー
-	 */
-	protected List<String> headerList = new ArrayList<>();
-
-	/**
-	 * ボディ
-	 */
-	protected List<List<String>> bodyList = new ArrayList<>();
-
-
-	/**
 	 * CSVファイルを読み込む
 	 * @param filePath ファイルパス
 	 */
-	public void readCSV(String filePath) {
+	public CSVResult readCSV(String filePath) {
+		/**
+		 * ヘッダー
+		 */
+		List<String> headerList = new ArrayList<>();
+
+		/**
+		 * ボディ
+		 */
+		List<List<String>> bodyList = new ArrayList<>();
+
+
 		try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
 			String line;
 			boolean isFirstLine = true;
@@ -52,19 +52,6 @@ public abstract class CSVReaderBase {
 			e.printStackTrace();
 		}
 
-	}
-
-	/**
-	 * @return getHeaderList
-	 */
-	public List<String> getHeaderList() {
-		return this.headerList;
-	}
-
-	/**
-	 * @return getBodyList
-	 */
-	public List<List<String>> getBodyList() {
-		return this.bodyList;
+		return new CSVResult(headerList, bodyList);
 	}
 }

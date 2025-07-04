@@ -554,4 +554,21 @@ public class ExecuteMainUtil {
 		return returnEntity;
 	}
 
+	/**
+	 * 「%」を削除する。%がなければその値を返す。その際付随していた場合は%文字列も同時に返却する
+	 * @param inPercentData
+	 * @return
+	 */
+	public static List<String> getExceptForPercent(String inPercentData) {
+		List<String> resultList = new ArrayList<>();
+		if (inPercentData.contains("%")) {
+			resultList.add(inPercentData.replace("%", ""));
+			resultList.add("%");
+			return resultList;
+		}
+		resultList.add(inPercentData);
+		resultList.add("");
+		return resultList;
+	}
+
 }

@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import dev.application.common.dto.CollectScoringOutputDTO;
+import dev.application.common.exception.BusinessException;
 import dev.application.common.exception.SystemException;
 import dev.application.common.util.DateUtil;
 import dev.application.common.util.ExecuteMainUtil;
@@ -61,6 +62,26 @@ public class CollectScoringDataStandardValueLogic {
 	 */
 	private static final String[] TIME_KEY = { "0〜10", "10〜20", "20〜30", "30〜40", "40〜50",
 			"50〜60", "60〜70", "70〜80", "80〜90" };
+
+	/**
+	 * スレッドセーフ前提・suffix
+	 */
+	private String suffix_single = "";
+
+	/**
+	 * スレッドセーフ前提・suffix
+	 */
+	private String suffix1 = "";
+
+	/**
+	 * スレッドセーフ前提・suffix
+	 */
+	private String suffix2 = "";
+
+	/**
+	 * スレッドセーフ前提・suffix
+	 */
+	private String suffix3 = "";
 
 	/**
 	 * 実行メソッド
@@ -347,22 +368,6 @@ public class CollectScoringDataStandardValueLogic {
 		//4. 国,リーグ,situationキー,主チーム,スコア分布(得点あった場合の統計,得点なかった場合の統計),stat情報(CSV名から特定のカラムに登録)
 
 		// 同一indexは同一時間帯
-		//		double[] minScoreFeature = { 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0 };
-		//		double[] maxScoreFeature = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-		//		int[] minScoreInt = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		//		int[] maxScoreInt = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		//		double[] minNoScoreFeature = { 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0 };
-		//		double[] maxNoScoreFeature = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-		//		int[] minNoScoreInt = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		//		int[] maxNoScoreInt = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		//		double minNoScoreMainFeature = 1000.0;
-		//		double maxNoScoreMainFeature = 0.0;
-		//		int minNoScoreMainInt = 0;
-		//		int maxNoScoreMainInt = 0;
-		//		double[] averageScoreFeature = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-		//		double[] averageNoScoreFeature = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-		//		double averageScoreMainFeature = 0.0;
-		//		double averageNoScoreMainFeature = 0.0;
 		//		double[] standardDiviationNoScoreFeature = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 		//		double standardDiviationNoScoreMainFeature = 0.0;
 		// 得点があるデータか?(もちろん同データの別CSVでは得点がある可能性もある)
@@ -448,6 +453,8 @@ public class CollectScoringDataStandardValueLogic {
 					double maxNoScoreMainFeature = 0.0;
 					double averageNoScoreMainFeature = 0.0;
 					int noScoreMainInt = 0;
+					String minNoScoreMainFeatureOppoTeamSingle = team2;
+					String maxNoScoreMainFeatureOppoTeamSingle = team2;
 
 					String time_key = "";
 
@@ -458,26 +465,35 @@ public class CollectScoringDataStandardValueLogic {
 					CollectScoringOutputDTO collectScoringOutputDTO = getData(country, league, team, ha,
 							data_situation_key,
 							time_key, NO_GET_SCORE, stat);
-					List<List<String>> resultList = collectScoringOutputDTO.getRangeResultList();
+					List<List<String>> resultList = collectScoringOutputDTO.getSelectResultList();
 					String id = collectScoringOutputDTO.getId();
 					boolean updFlg = collectScoringOutputDTO.isExistFlg();
-
-					if (resultList != null) {
-						for (List<String> list : resultList) {
-							String get_stat = list.get(2);
-							// statを分割
-							String[] stat_split = get_stat.split(",");
-							String get_stat_min = stat_split[0];
-							String get_stat_max = stat_split[1];
-							String get_stat_ave = stat_split[2];
-							int get_stat_count = Integer.parseInt(stat_split[3]);
-							minNoScoreMainFeature = Double.parseDouble(get_stat_min);
-							maxNoScoreMainFeature = Double.parseDouble(get_stat_max);
-							averageNoScoreMainFeature = Double.parseDouble(get_stat_ave);
-							noScoreMainInt = get_stat_count;
-							// 平均*件数を導出
-							averageNoScoreMainFeature *= noScoreMainInt;
-						}
+					for (List<String> list : resultList) {
+						String get_stat = list.get(3);
+						if (get_stat == null) continue;
+						// statを分割
+						String[] stat_split = get_stat.split(",");
+						String get_stat_min = stat_split[0];
+						List<String> data1 = ExecuteMainUtil.getExceptForPercent(get_stat_min);
+						get_stat_min = data1.get(0);
+						this.suffix1 = data1.get(1);
+						String get_stat_max = stat_split[1];
+						List<String> data2 = ExecuteMainUtil.getExceptForPercent(get_stat_max);
+						get_stat_max = data2.get(0);
+						this.suffix2 = data2.get(1);
+						String get_stat_ave = stat_split[2];
+						List<String> data3 = ExecuteMainUtil.getExceptForPercent(get_stat_ave);
+						get_stat_ave = data3.get(0);
+						this.suffix3 = data3.get(1);
+						int get_stat_count = Integer.parseInt(stat_split[3]);
+						minNoScoreMainFeature = Double.parseDouble(get_stat_min);
+						maxNoScoreMainFeature = Double.parseDouble(get_stat_max);
+						averageNoScoreMainFeature = Double.parseDouble(get_stat_ave);
+						noScoreMainInt = get_stat_count;
+						minNoScoreMainFeatureOppoTeamSingle = stat_split[4];
+						maxNoScoreMainFeatureOppoTeamSingle = stat_split[5];
+						// 平均*件数を導出
+						averageNoScoreMainFeature *= noScoreMainInt;
 					}
 
 					// home, awayのindex
@@ -493,12 +509,21 @@ public class CollectScoringDataStandardValueLogic {
 							}
 							String[] fea_data = feas.split("-");
 							String features = fea_data[0];
+							List<String> data1 = ExecuteMainUtil.getExceptForPercent(features);
+							features = data1.get(0);
+							this.suffix_single = data1.get(1);
 							double data = Double.parseDouble(features);
 							// 単純累積についてはNO_GET_SCOREのみ確認する(最大値を確認するとその最大値では点が入らないことがわかる)
-							minNoScoreMainFeature = compareMin(
-									minNoScoreMainFeature, data);
-							maxNoScoreMainFeature = compareMax(
-									maxNoScoreMainFeature, data);
+							List<String> result1 = compareMin(
+									minNoScoreMainFeature, data,
+									minNoScoreMainFeatureOppoTeamSingle, team2);
+							minNoScoreMainFeature = Double.parseDouble(result1.get(0));
+							minNoScoreMainFeatureOppoTeamSingle = result1.get(1);
+							List<String> result2 = compareMax(
+									maxNoScoreMainFeature, data,
+									maxNoScoreMainFeatureOppoTeamSingle, team2);
+							maxNoScoreMainFeature = Double.parseDouble(result2.get(0));
+							maxNoScoreMainFeatureOppoTeamSingle = result2.get(1);
 							// 平均導出用
 							averageNoScoreMainFeature = sumAverage(
 									averageNoScoreMainFeature, data);
@@ -517,9 +542,9 @@ public class CollectScoringDataStandardValueLogic {
 					// 平均値(averageNoScoreMainFeature),
 					// 最小値,最大値を示した時の対戦チーム名(oppoteams)
 					String sBuilder = String.join(",",
-							String.valueOf(minNoScoreMainFeature),
-							String.valueOf(maxNoScoreMainFeature),
-							String.format("%.2f", averageNoScoreMainFeature),
+							String.format("%.2f", minNoScoreMainFeature) + this.suffix1,
+							String.format("%.2f", maxNoScoreMainFeature) + this.suffix1,
+							String.format("%.2f", averageNoScoreMainFeature) + this.suffix1,
 							String.valueOf(noScoreMainInt));
 					//String.valueOf(team2));
 
@@ -550,6 +575,14 @@ public class CollectScoringDataStandardValueLogic {
 				double[] averageNoScoreFeature = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 				int[] scoreInt = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 				int[] noScoreInt = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+				String[] minScoreFeatureOppoTeam = { team2, team2, team2, team2, team2,
+						team2, team2, team2, team2 };
+				String[] maxScoreFeatureOppoTeam = { team2, team2, team2, team2, team2,
+						team2, team2, team2, team2 };
+				String[] minNoScoreFeatureOppoTeam = { team2, team2, team2, team2, team2,
+						team2, team2, team2, team2 };
+				String[] maxNoScoreFeatureOppoTeam = { team2, team2, team2, team2, team2,
+						team2, team2, team2, team2 };
 
 				double[] minScoreFeatureDiff = { 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0,
 						1000.0, 1000.0 };
@@ -571,6 +604,17 @@ public class CollectScoringDataStandardValueLogic {
 				double[] averageScoreFeatureDiff = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 				double[] averageNoScoreFeatureDiff = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 				double averageNoScoreMainFeatureDiff = 0.0;
+
+				String[] minScoreFeatureDiffOppoTeam = { team2, team2, team2, team2, team2,
+						team2, team2, team2, team2 };
+				String[] maxScoreFeatureDiffOppoTeam = { team2, team2, team2, team2, team2,
+						team2, team2, team2, team2 };
+				String[] minNoScoreFeatureDiffOppoTeam = { team2, team2, team2, team2, team2,
+						team2, team2, team2, team2 };
+				String[] maxNoScoreFeatureDiffOppoTeam = { team2, team2, team2, team2, team2,
+						team2, team2, team2, team2 };
+				String minNoScoreMainFeatureDiffOppoTeamSingle = team2;
+				String maxNoScoreMainFeatureDiffOppoTeamSingle = team2;
 
 				// 差分比較ができるか
 				if (indices != null && indices2 != null) {
@@ -612,37 +656,79 @@ public class CollectScoringDataStandardValueLogic {
 									CollectScoringOutputDTO collectScoringOutputDTO = getData(country, league, team, ha,
 											data_situation_key,
 											time_key, null, stat);
-									List<List<String>> resultList = collectScoringOutputDTO.getRangeResultList();
-									String id = collectScoringOutputDTO.getId();
+									List<List<String>> resultList = collectScoringOutputDTO.getSelectResultList();
 									boolean updFlg = collectScoringOutputDTO.isExistFlg();
-									if (resultList != null) {
-										for (List<String> list : resultList) {
-											String get_time_key = list.get(1);
-											String score_distribution = list.get(2);
-											String get_stat = list.get(3);
-											// statを分割
-											String[] stat_split = get_stat.split(",");
-											String get_stat_min = stat_split[0];
-											String get_stat_max = stat_split[1];
-											String get_stat_ave = stat_split[2];
-											int get_stat_count = Integer.parseInt(stat_split[4]);
-											// charAtでindexを表現
-											int stat_ind = get_time_key.charAt(0);
-											if (GET_SCORE.equals(score_distribution)) {
-												minScoreFeatureDiff[stat_ind] = Double.parseDouble(get_stat_min);
-												maxScoreFeatureDiff[stat_ind] = Double.parseDouble(get_stat_max);
-												averageScoreFeatureDiff[stat_ind] = Double.parseDouble(get_stat_ave);
-												scoreIntDiff[stat_ind] = get_stat_count;
-												// 平均*件数を導出
-												averageScoreFeatureDiff[stat_ind] *= scoreIntDiff[stat_ind];
-											} else if (NO_GET_SCORE.equals(score_distribution)) {
-												minNoScoreFeatureDiff[stat_ind] = Double.parseDouble(get_stat_min);
-												maxNoScoreFeatureDiff[stat_ind] = Double.parseDouble(get_stat_max);
-												averageNoScoreFeatureDiff[stat_ind] = Double.parseDouble(get_stat_ave);
-												noScoreIntDiff[stat_ind] = get_stat_count;
-												// 平均*件数を導出
-												averageNoScoreFeatureDiff[stat_ind] *= noScoreIntDiff[stat_ind];
-											}
+									// 得点あり,なし両方保持
+									List<String> idList = new ArrayList<>();
+									for (int j = 0; j < score_distribution_list.length; j++) {
+										for (int i = 0; i < TIME_KEY.length; i++) {
+											idList.add("");
+										}
+									}
+									for (List<String> list : resultList) {
+										String get_time_key = list.get(1);
+										String[] range = get_time_key.split("〜");
+										String score_distribution = list.get(2);
+										// GET_SCOREなら0, NOT_GET_SCOREなら1を暫定的に指定
+										int tmp_flg = (GET_SCORE.equals(score_distribution)) ?
+												0 : 1;
+										int stat_ind = Integer.parseInt(range[0]) / 10;
+										String id = list.get(0);
+										// GET_SCOREなら0〜9, NOT_GET_SCOREなら10〜19のindexに割り振る
+										idList.set(tmp_flg * TIME_KEY.length + stat_ind, id);
+										String get_stat = list.get(3);
+										// statがnull(同一データだが特徴量がまだ未登録)はcontinue
+										if (get_stat == null)
+											continue;
+										// statを分割
+										String[] stat_split = get_stat.split(",");
+										String get_stat_min = stat_split[0];
+										List<String> data1 = ExecuteMainUtil.getExceptForPercent(get_stat_min);
+										get_stat_min = data1.get(0);
+										this.suffix1 = data1.get(1);
+										String get_stat_max = stat_split[1];
+										List<String> data2 = ExecuteMainUtil.getExceptForPercent(get_stat_max);
+										get_stat_max = data2.get(0);
+										this.suffix2 = data2.get(1);
+										String get_stat_ave = stat_split[2];
+										List<String> data3 = ExecuteMainUtil.getExceptForPercent(get_stat_ave);
+										get_stat_ave = data3.get(0);
+										this.suffix3 = data3.get(1);
+										int minus_get_stat_count = Integer.parseInt(stat_split[3]);
+										int plus_get_stat_count = Integer.parseInt(stat_split[4]);
+										int get_stat_count = Integer.parseInt(stat_split[5]);
+										// 比較エラー
+										if (!this.suffix1.equals(this.suffix2) || !this.suffix2.equals(this.suffix3)
+												|| !this.suffix3.equals(this.suffix1)) {
+											throw new BusinessException("", "", "",
+													"suffix err: country: " + country +
+															", league: " + league + ", team: " + teams
+															+ ", oppoteam: " + oppoteams + ", "
+															+ "stat: " + stat + ", data_situation_key: "
+															+ data_situation_key + "");
+										}
+										if (GET_SCORE.equals(score_distribution)) {
+											minScoreFeatureDiff[stat_ind] = Double.parseDouble(get_stat_min);
+											maxScoreFeatureDiff[stat_ind] = Double.parseDouble(get_stat_max);
+											averageScoreFeatureDiff[stat_ind] = Double.parseDouble(get_stat_ave);
+											scoreIntDiff[stat_ind] = get_stat_count;
+											minusScoreIntDiff[stat_ind] = minus_get_stat_count;
+											plusScoreIntDiff[stat_ind] = plus_get_stat_count;
+											minScoreFeatureDiffOppoTeam[stat_ind] = stat_split[6];
+											maxScoreFeatureDiffOppoTeam[stat_ind] = stat_split[7];
+											// 平均*件数を導出
+											averageScoreFeatureDiff[stat_ind] *= scoreIntDiff[stat_ind];
+										} else if (NO_GET_SCORE.equals(score_distribution)) {
+											minNoScoreFeatureDiff[stat_ind] = Double.parseDouble(get_stat_min);
+											maxNoScoreFeatureDiff[stat_ind] = Double.parseDouble(get_stat_max);
+											averageNoScoreFeatureDiff[stat_ind] = Double.parseDouble(get_stat_ave);
+											noScoreIntDiff[stat_ind] = get_stat_count;
+											minusNoScoreIntDiff[stat_ind] = minus_get_stat_count;
+											plusNoScoreIntDiff[stat_ind] = plus_get_stat_count;
+											minNoScoreFeatureDiffOppoTeam[stat_ind] = stat_split[6];
+											maxNoScoreFeatureDiffOppoTeam[stat_ind] = stat_split[7];
+											// 平均*件数を導出
+											averageNoScoreFeatureDiff[stat_ind] *= noScoreIntDiff[stat_ind];
 										}
 									}
 
@@ -663,16 +749,36 @@ public class CollectScoringDataStandardValueLogic {
 										String[] fea_data2 = feas2.split("-");
 										String features2 = fea_data2[0];
 										String rank2 = fea_data2[1];
+										List<String> dataSub1 = ExecuteMainUtil.getExceptForPercent(features1);
+										features1 = dataSub1.get(0);
+										this.suffix1 = dataSub1.get(1);
+										List<String> dataSub2 = ExecuteMainUtil.getExceptForPercent(features2);
+										features2 = dataSub2.get(0);
+										this.suffix2 = dataSub2.get(1);
+										// 比較エラー
+										if (!this.suffix1.equals(this.suffix2)) {
+											throw new BusinessException("", "", "", "suffix err: country: " + country +
+													", league: " + league + ", team: " + teams + ", oppoteam: "
+													+ oppoteams + ", "
+													+ "stat: " + stat + ", data_situation_key: " + data_situation_key
+													+ "");
+										}
 										double data1 = Double.parseDouble(features1);
 										double data2 = Double.parseDouble(features2);
 										if (rank1.endsWith(" (0)") && !rank2.endsWith(" (0)")) {
 											if (data1 != 10000.0 && data2 != 10000.0) {
 												// data1-data2
 												double sa1 = data1 - data2;
-												minScoreFeatureDiff[ind - 2] = compareSaMin(
-														minScoreFeatureDiff[ind - 2], sa1);
-												maxScoreFeatureDiff[ind - 2] = compareSaMax(
-														maxScoreFeatureDiff[ind - 2], sa1);
+												List<String> result1 = compareSaMin(
+														minScoreFeatureDiff[ind - 2], sa1,
+														minScoreFeatureDiffOppoTeam[ind - 2], team2);
+												minScoreFeatureDiff[ind - 2] = Double.parseDouble(result1.get(0));
+												minScoreFeatureDiffOppoTeam[ind - 2] = result1.get(1);
+												List<String> result2 = compareSaMax(
+														maxScoreFeatureDiff[ind - 2], sa1,
+														maxScoreFeatureDiffOppoTeam[ind - 2], team2);
+												maxScoreFeatureDiff[ind - 2] = Double.parseDouble(result2.get(0));
+												maxScoreFeatureDiffOppoTeam[ind - 2] = result2.get(1);
 												averageScoreFeatureDiff[ind - 2] = sumSaAverage(
 														averageScoreFeatureDiff[ind - 2], sa1);
 												if (sa1 < 0.0) {
@@ -686,12 +792,18 @@ public class CollectScoringDataStandardValueLogic {
 											}
 										} else if (rank2.endsWith(" (0)") && !rank1.endsWith(" (0)")) {
 											if (data1 != 10000.0 && data2 != 10000.0) {
-												// data2-data1
-												double sa2 = data2 - data1;
-												minScoreFeatureDiff[ind - 2] = compareSaMin(
-														minScoreFeatureDiff[ind - 2], sa2);
-												maxScoreFeatureDiff[ind - 2] = compareSaMax(
-														maxScoreFeatureDiff[ind - 2], sa2);
+												// data1-data2
+												double sa2 = data1 - data2;
+												List<String> result1 = compareSaMin(
+														minScoreFeatureDiff[ind - 2], sa2,
+														minScoreFeatureDiffOppoTeam[ind - 2], team2);
+												minScoreFeatureDiff[ind - 2] = Double.parseDouble(result1.get(0));
+												minScoreFeatureDiffOppoTeam[ind - 2] = result1.get(1);
+												List<String> result2 = compareSaMax(
+														maxScoreFeatureDiff[ind - 2], sa2,
+														maxScoreFeatureDiffOppoTeam[ind - 2], team2);
+												maxScoreFeatureDiff[ind - 2] = Double.parseDouble(result2.get(0));
+												maxScoreFeatureDiffOppoTeam[ind - 2] = result2.get(1);
 												averageScoreFeatureDiff[ind - 2] = sumSaAverage(
 														averageScoreFeatureDiff[ind - 2], sa2);
 												if (sa2 < 0.0) {
@@ -708,10 +820,16 @@ public class CollectScoringDataStandardValueLogic {
 											if (data1 != 10000.0 && data2 != 10000.0) {
 												// data1-data2
 												double sano = data1 - data2;
-												minNoScoreFeatureDiff[ind - 2] = compareSaMin(
-														minNoScoreFeatureDiff[ind - 2], sano);
-												maxNoScoreFeatureDiff[ind - 2] = compareSaMax(
-														maxNoScoreFeatureDiff[ind - 2], sano);
+												List<String> result1 = compareSaMin(
+														minNoScoreFeatureDiff[ind - 2], sano,
+														minNoScoreFeatureDiffOppoTeam[ind - 2], team2);
+												minNoScoreFeatureDiff[ind - 2] = Double.parseDouble(result1.get(0));
+												minNoScoreFeatureDiffOppoTeam[ind - 2] = result1.get(1);
+												List<String> result2 = compareSaMax(
+														maxNoScoreFeatureDiff[ind - 2], sano,
+														maxNoScoreFeatureDiffOppoTeam[ind - 2], team2);
+												maxNoScoreFeatureDiff[ind - 2] = Double.parseDouble(result2.get(0));
+												maxNoScoreFeatureDiffOppoTeam[ind - 2] = result2.get(1);
 												averageNoScoreFeatureDiff[ind - 2] = sumSaAverage(
 														averageNoScoreFeatureDiff[ind - 2], sano);
 												if (sano < 0.0) {
@@ -728,10 +846,16 @@ public class CollectScoringDataStandardValueLogic {
 											if (data1 != 10000.0 && data2 != 10000.0) {
 												// data1-data2
 												double sabo = data1 - data2;
-												minScoreFeatureDiff[ind - 2] = compareSaMin(
-														minScoreFeatureDiff[ind - 2], sabo);
-												maxScoreFeatureDiff[ind - 2] = compareSaMax(
-														maxScoreFeatureDiff[ind - 2], sabo);
+												List<String> result1 = compareSaMin(
+														minScoreFeatureDiff[ind - 2], sabo,
+														minScoreFeatureDiffOppoTeam[ind - 2], team2);
+												minScoreFeatureDiff[ind - 2] = Double.parseDouble(result1.get(0));
+												minScoreFeatureDiffOppoTeam[ind - 2] = result1.get(1);
+												List<String> result2 = compareSaMax(
+														maxScoreFeatureDiff[ind - 2], sabo,
+														maxScoreFeatureDiffOppoTeam[ind - 2], team2);
+												maxScoreFeatureDiff[ind - 2] = Double.parseDouble(result2.get(0));
+												maxScoreFeatureDiffOppoTeam[ind - 2] = result2.get(1);
 												averageScoreFeatureDiff[ind - 2] = sumSaAverage(
 														averageScoreFeatureDiff[ind - 2], sabo);
 												if (sabo < 0.0) {
@@ -770,6 +894,9 @@ public class CollectScoringDataStandardValueLogic {
 									// 対象データ数(scoreIntDiff)
 									// 差分最小値,差分最大値を示した時の対戦チーム名(oppoteams)
 									for (String score_distribution : score_distribution_list) {
+										int sub_ind = (GET_SCORE.equals(score_distribution)) ?
+												0 : TIME_KEY.length;
+										int id_ind = sub_ind;
 										int stat_id = 0;
 										for (String time_key_reg : TIME_KEY) {
 											// データ連結
@@ -791,19 +918,27 @@ public class CollectScoringDataStandardValueLogic {
 											int scoreDiff = (GET_SCORE.equals(score_distribution))
 													? scoreIntDiff[stat_id]
 													: noScoreIntDiff[stat_id];
+											String minOppoDiff = (GET_SCORE.equals(score_distribution))
+													? minScoreFeatureDiffOppoTeam[stat_id]
+													: minNoScoreFeatureDiffOppoTeam[stat_id];
+											String maxOppoDiff = (GET_SCORE.equals(score_distribution))
+													? maxScoreFeatureDiffOppoTeam[stat_id]
+													: maxNoScoreFeatureDiffOppoTeam[stat_id];
 											String sBuilder = String.join(",",
-													String.valueOf(minDiff),
-													String.valueOf(maxDiff),
-													String.format("%.2f", aveDiff),
+													String.format("%.2f", minDiff) + this.suffix1,
+													String.format("%.2f", maxDiff) + this.suffix1,
+													String.format("%.2f", aveDiff) + this.suffix1,
 													String.valueOf(minusDiff),
 													String.valueOf(plusDiff),
 													String.valueOf(scoreDiff),
-													String.valueOf(oppoteams));
+													String.valueOf(minOppoDiff),
+													String.valueOf(maxOppoDiff));
 
 											registerData(country, league, team, ha,
 													data_situation_key, time_key_reg, score_distribution, stat,
-													sBuilder.toString(), updFlg, id);
+													sBuilder.toString(), updFlg, idList.get(id_ind));
 											stat_id++;
+											id_ind++;
 										}
 									}
 
@@ -812,25 +947,49 @@ public class CollectScoringDataStandardValueLogic {
 									CollectScoringOutputDTO collectScoringOutputDTO = getData(country, league, team, ha,
 											data_situation_key,
 											time_key, NO_GET_SCORE, stat);
-									List<List<String>> resultList = collectScoringOutputDTO.getRangeResultList();
+									List<List<String>> resultList = collectScoringOutputDTO.getSelectResultList();
 									String id = collectScoringOutputDTO.getId();
 									boolean updFlg = collectScoringOutputDTO.isExistFlg();
-									if (resultList != null) {
-										for (List<String> list : resultList) {
-											String get_stat = list.get(3);
-											// statを分割
-											String[] stat_split = get_stat.split(",");
-											String get_stat_min = stat_split[0];
-											String get_stat_max = stat_split[1];
-											String get_stat_ave = stat_split[2];
-											int get_stat_count = Integer.parseInt(stat_split[4]);
-											minNoScoreMainFeatureDiff = Double.parseDouble(get_stat_min);
-											maxNoScoreMainFeatureDiff = Double.parseDouble(get_stat_max);
-											averageNoScoreMainFeatureDiff = Double.parseDouble(get_stat_ave);
-											noScoreMainIntDiff = get_stat_count;
-											// 平均*件数を導出
-											averageNoScoreMainFeatureDiff *= noScoreMainIntDiff;
+									for (List<String> list : resultList) {
+										String get_stat = list.get(3);
+										if (get_stat == null) continue;
+										// statを分割
+										String[] stat_split = get_stat.split(",");
+										String get_stat_min = stat_split[0];
+										List<String> data1 = ExecuteMainUtil.getExceptForPercent(get_stat_min);
+										get_stat_min = data1.get(0);
+										this.suffix1 = data1.get(1);
+										String get_stat_max = stat_split[1];
+										List<String> data2 = ExecuteMainUtil.getExceptForPercent(get_stat_max);
+										get_stat_max = data2.get(0);
+										this.suffix2 = data2.get(1);
+										String get_stat_ave = stat_split[2];
+										List<String> data3 = ExecuteMainUtil.getExceptForPercent(get_stat_ave);
+										get_stat_ave = data3.get(0);
+										this.suffix3 = data3.get(1);
+										// 比較エラー
+										if (!this.suffix1.equals(this.suffix2) || !this.suffix2.equals(this.suffix3)
+												|| !this.suffix3.equals(this.suffix1)) {
+											throw new BusinessException("", "", "",
+													"suffix err: country: " + country +
+															", league: " + league + ", team: " + teams
+															+ ", oppoteam: " + oppoteams + ", "
+															+ "stat: " + stat + ", data_situation_key: "
+															+ data_situation_key + "");
 										}
+										int minus_get_stat_count = Integer.parseInt(stat_split[3]);
+										int plus_get_stat_count = Integer.parseInt(stat_split[4]);
+										int get_stat_count = Integer.parseInt(stat_split[5]);
+										minNoScoreMainFeatureDiff = Double.parseDouble(get_stat_min);
+										maxNoScoreMainFeatureDiff = Double.parseDouble(get_stat_max);
+										averageNoScoreMainFeatureDiff = Double.parseDouble(get_stat_ave);
+										minusNoScoreMainIntDiff = minus_get_stat_count;
+										plusNoScoreMainIntDiff = plus_get_stat_count;
+										noScoreMainIntDiff = get_stat_count;
+										minNoScoreMainFeatureDiffOppoTeamSingle = stat_split[6];
+										maxNoScoreMainFeatureDiffOppoTeamSingle = stat_split[7];
+										// 平均*件数を導出
+										averageNoScoreMainFeatureDiff *= noScoreMainIntDiff;
 									}
 
 									// 時間帯データをloop
@@ -850,6 +1009,20 @@ public class CollectScoringDataStandardValueLogic {
 										String[] fea_data2 = feas2.split("-");
 										String features2 = fea_data2[0];
 										String rank2 = fea_data2[1];
+										List<String> dataSub1 = ExecuteMainUtil.getExceptForPercent(features1);
+										features1 = dataSub1.get(0);
+										this.suffix1 = dataSub1.get(1);
+										List<String> dataSub2 = ExecuteMainUtil.getExceptForPercent(features2);
+										features2 = dataSub2.get(0);
+										this.suffix2 = dataSub2.get(1);
+										// 比較エラー
+										if (!this.suffix1.equals(this.suffix2)) {
+											throw new BusinessException("", "", "", "suffix err: country: " + country +
+													", league: " + league + ", team: " + teams + ", oppoteam: "
+													+ oppoteams + ", "
+													+ "stat: " + stat + ", data_situation_key: " + data_situation_key
+													+ "");
+										}
 										double data1 = Double.parseDouble(features1);
 										double data2 = Double.parseDouble(features2);
 										// 無得点
@@ -857,12 +1030,18 @@ public class CollectScoringDataStandardValueLogic {
 											if (data1 != 10000.0 && data2 != 10000.0) {
 												// data1-data2
 												double sano = data1 - data2;
-												minNoScoreMainFeatureDiff = compareSaMin(
-														minNoScoreMainFeatureDiff, sano);
-												maxNoScoreMainFeatureDiff = compareSaMax(
-														maxNoScoreMainFeatureDiff, sano);
-												averageNoScoreFeatureDiff[ind - 2] = sumSaAverage(
-														averageNoScoreFeatureDiff[ind - 2], sano);
+												List<String> result1 = compareSaMin(
+														minNoScoreMainFeatureDiff, sano,
+														minNoScoreMainFeatureDiffOppoTeamSingle, team2);
+												minNoScoreMainFeatureDiff = Double.parseDouble(result1.get(0));
+												minNoScoreMainFeatureDiffOppoTeamSingle = result1.get(1);
+												List<String> result2 = compareSaMax(
+														maxNoScoreMainFeatureDiff, sano,
+														maxNoScoreMainFeatureDiffOppoTeamSingle, team2);
+												maxNoScoreMainFeatureDiff = Double.parseDouble(result2.get(0));
+												maxNoScoreMainFeatureDiffOppoTeamSingle = result2.get(1);
+												averageNoScoreMainFeatureDiff = sumSaAverage(
+														averageNoScoreMainFeatureDiff, sano);
 												if (sano < 0.0) {
 													minusNoScoreMainIntDiff = sumSaCount(
 															minusNoScoreMainIntDiff, 1);
@@ -889,13 +1068,14 @@ public class CollectScoringDataStandardValueLogic {
 									// 対象データ数(noScoreMainIntDiff)
 									// 差分最小値,差分最大値を示した時の対戦チーム名(oppoteams)
 									String sBuilder = String.join(",",
-											String.valueOf(minNoScoreMainFeatureDiff),
-											String.valueOf(maxNoScoreMainFeatureDiff),
-											String.format("%.2f", averageNoScoreMainFeatureDiff),
+											String.format("%.2f", minNoScoreMainFeatureDiff) + this.suffix1,
+											String.format("%.2f", maxNoScoreMainFeatureDiff) + this.suffix1,
+											String.format("%.2f", averageNoScoreMainFeatureDiff) + this.suffix1,
 											String.valueOf(minusNoScoreMainIntDiff),
 											String.valueOf(plusNoScoreMainIntDiff),
 											String.valueOf(noScoreMainIntDiff),
-											String.valueOf(oppoteams));
+											String.valueOf(minNoScoreMainFeatureDiffOppoTeamSingle),
+											String.valueOf(maxNoScoreMainFeatureDiffOppoTeamSingle));
 
 									registerData(country, league, team, ha,
 											data_situation_key, null, NO_GET_SCORE, stat,
@@ -913,37 +1093,65 @@ public class CollectScoringDataStandardValueLogic {
 									CollectScoringOutputDTO collectScoringOutputDTO = getData(country, league, team, ha,
 											data_situation_key,
 											time_key, score_distribution, stat);
-									List<List<String>> resultList = collectScoringOutputDTO.getRangeResultList();
-									String id = collectScoringOutputDTO.getId();
+									List<List<String>> resultList = collectScoringOutputDTO.getSelectResultList();
 									boolean updFlg = collectScoringOutputDTO.isExistFlg();
-									if (resultList != null) {
-										for (List<String> list : resultList) {
-											String get_time_key = list.get(1);
-											String score_distribution_sub = list.get(2);
-											String get_stat = list.get(3);
-											// statを分割
-											String[] stat_split = get_stat.split(",");
-											String get_stat_min = stat_split[0];
-											String get_stat_max = stat_split[1];
-											String get_stat_ave = stat_split[2];
-											int get_stat_count = Integer.parseInt(stat_split[4]);
-											// charAtでindexを表現
-											int stat_ind = get_time_key.charAt(0);
-											if (GET_SCORE.equals(score_distribution_sub)) {
-												minScoreFeature[stat_ind] = Double.parseDouble(get_stat_min);
-												maxScoreFeature[stat_ind] = Double.parseDouble(get_stat_max);
-												averageScoreFeature[stat_ind] = Double.parseDouble(get_stat_ave);
-												scoreInt[stat_ind] = get_stat_count;
-												// 平均*件数を導出
-												averageScoreFeature[stat_ind] *= scoreInt[stat_ind];
-											} else if (NO_GET_SCORE.equals(score_distribution_sub)) {
-												minNoScoreFeature[stat_ind] = Double.parseDouble(get_stat_min);
-												maxNoScoreFeature[stat_ind] = Double.parseDouble(get_stat_max);
-												averageNoScoreFeature[stat_ind] = Double.parseDouble(get_stat_ave);
-												noScoreInt[stat_ind] = get_stat_count;
-												// 平均*件数を導出
-												averageNoScoreFeature[stat_ind] *= noScoreInt[stat_ind];
-											}
+									List<String> idList = new ArrayList<>();
+									for (int i = 0; i < TIME_KEY.length; i++) {
+										idList.add("");
+									}
+									for (List<String> list : resultList) {
+										String get_time_key = list.get(1);
+										int stat_ind = Integer.parseInt(get_time_key.substring(0, 1));
+										String id = list.get(0);
+										idList.set(stat_ind, id);
+										String score_distribution_sub = list.get(2);
+										String get_stat = list.get(3);
+										// statがnull(同一データだが特徴量がまだ未登録)はcontinue
+										if (get_stat == null)
+											continue;
+										// statを分割
+										String[] stat_split = get_stat.split(",");
+										String get_stat_min = stat_split[0];
+										List<String> data1 = ExecuteMainUtil.getExceptForPercent(get_stat_min);
+										get_stat_min = data1.get(0);
+										this.suffix1 = data1.get(1);
+										String get_stat_max = stat_split[1];
+										List<String> data2 = ExecuteMainUtil.getExceptForPercent(get_stat_max);
+										get_stat_max = data2.get(0);
+										this.suffix2 = data2.get(1);
+										String get_stat_ave = stat_split[2];
+										List<String> data3 = ExecuteMainUtil.getExceptForPercent(get_stat_ave);
+										get_stat_ave = data3.get(0);
+										this.suffix3 = data3.get(1);
+										// 比較エラー
+										if (!this.suffix1.equals(this.suffix2) || !this.suffix2.equals(this.suffix3)
+												|| !this.suffix3.equals(this.suffix1)) {
+											throw new BusinessException("", "", "", "suffix err: country: " + country +
+													", league: " + league + ", team: " + teams + ", oppoteam: "
+													+ oppoteams + ", "
+													+ "stat: " + stat + ", data_situation_key: " + data_situation_key
+													+ "");
+										}
+										int get_stat_count = Integer.parseInt(stat_split[3]);
+
+										if (GET_SCORE.equals(score_distribution_sub)) {
+											minScoreFeature[stat_ind] = Double.parseDouble(get_stat_min);
+											maxScoreFeature[stat_ind] = Double.parseDouble(get_stat_max);
+											averageScoreFeature[stat_ind] = Double.parseDouble(get_stat_ave);
+											scoreInt[stat_ind] = get_stat_count;
+											minScoreFeatureOppoTeam[stat_ind] = stat_split[4];
+											maxScoreFeatureOppoTeam[stat_ind] = stat_split[5];
+											// 平均*件数を導出
+											averageScoreFeature[stat_ind] *= scoreInt[stat_ind];
+										} else if (NO_GET_SCORE.equals(score_distribution_sub)) {
+											minNoScoreFeature[stat_ind] = Double.parseDouble(get_stat_min);
+											maxNoScoreFeature[stat_ind] = Double.parseDouble(get_stat_max);
+											averageNoScoreFeature[stat_ind] = Double.parseDouble(get_stat_ave);
+											noScoreInt[stat_ind] = get_stat_count;
+											minNoScoreFeatureOppoTeam[stat_ind] = stat_split[4];
+											maxNoScoreFeatureOppoTeam[stat_ind] = stat_split[5];
+											// 平均*件数を導出
+											averageNoScoreFeature[stat_ind] *= noScoreInt[stat_ind];
 										}
 									}
 
@@ -957,23 +1165,38 @@ public class CollectScoringDataStandardValueLogic {
 										String[] fea_data1 = feas1.split("-");
 										String features1 = fea_data1[0];
 										String rank1 = fea_data1[1];
+										List<String> dataSub1 = ExecuteMainUtil.getExceptForPercent(features1);
+										features1 = dataSub1.get(0);
+										this.suffix_single = dataSub1.get(1);
 										double data1 = Double.parseDouble(features1);
 										// 得点なし
 										if (rank1.endsWith(" (0)") && data1 != 10000.0) {
-											minNoScoreFeature[ind - 2] = compareMin(
-													minNoScoreFeature[ind - 2], data1);
-											maxNoScoreFeature[ind - 2] = compareMax(
-													maxNoScoreFeature[ind - 2], data1);
+											List<String> result1 = compareMin(
+													minNoScoreFeature[ind - 2], data1,
+													minNoScoreFeatureOppoTeam[ind - 2], team2);
+											minNoScoreFeature[ind - 2] = Double.parseDouble(result1.get(0));
+											minNoScoreFeatureOppoTeam[ind - 2] = result1.get(1);
+											List<String> result2 = compareMax(
+													maxNoScoreFeature[ind - 2], data1,
+													maxNoScoreFeatureOppoTeam[ind - 2], team2);
+											maxNoScoreFeature[ind - 2] = Double.parseDouble(result2.get(0));
+											maxNoScoreFeatureOppoTeam[ind - 2] = result2.get(1);
 											// 平均導出用
 											averageNoScoreFeature[ind - 2] = sumAverage(
 													averageNoScoreFeature[ind - 2], data1);
 											noScoreInt[ind - 2] = sumCount(noScoreInt[ind - 2], 1);
 											// 得点あり
 										} else if (!rank1.endsWith(" (0)") && data1 != 10000.0) {
-											minScoreFeature[ind - 2] = compareMin(
-													minScoreFeature[ind - 2], data1);
-											maxScoreFeature[ind - 2] = compareMax(
-													maxScoreFeature[ind - 2], data1);
+											List<String> result1 = compareMin(
+													minScoreFeature[ind - 2], data1,
+													minScoreFeatureOppoTeam[ind - 2], team2);
+											minScoreFeature[ind - 2] = Double.parseDouble(result1.get(0));
+											minScoreFeatureOppoTeam[ind - 2] = result1.get(1);
+											List<String> result2 = compareMax(
+													maxScoreFeature[ind - 2], data1,
+													maxScoreFeatureOppoTeam[ind - 2], team2);
+											maxScoreFeature[ind - 2] = Double.parseDouble(result2.get(0));
+											maxScoreFeatureOppoTeam[ind - 2] = result2.get(1);
 											// 平均導出用
 											averageScoreFeature[ind - 2] = sumAverage(
 													averageScoreFeature[ind - 2], data1);
@@ -1013,29 +1236,38 @@ public class CollectScoringDataStandardValueLogic {
 												: averageNoScoreFeature[stat_id];
 										int score = (GET_SCORE.equals(score_distribution)) ? scoreInt[stat_id]
 												: noScoreInt[stat_id];
+										String minOppoDiff = (GET_SCORE.equals(score_distribution))
+												? minScoreFeatureOppoTeam[stat_id]
+												: minNoScoreFeatureOppoTeam[stat_id];
+										String maxOppoDiff = (GET_SCORE.equals(score_distribution))
+												? maxScoreFeatureOppoTeam[stat_id]
+												: maxNoScoreFeatureOppoTeam[stat_id];
 										String sBuilder = String.join(",",
-												String.valueOf(min),
-												String.valueOf(max),
-												String.format("%.2f", ave),
+												String.format("%.2f", min) + this.suffix_single,
+												String.format("%.2f", max) + this.suffix_single,
+												String.format("%.2f", ave) + this.suffix_single,
 												String.valueOf(score),
-												String.valueOf(oppoteams));
+												String.valueOf(minOppoDiff),
+												String.valueOf(maxOppoDiff));
 
 										registerData(country, league, team, ha,
 												data_situation_key, time_key_reg, score_distribution, stat,
-												sBuilder.toString(), updFlg, id);
+												sBuilder.toString(), updFlg, idList.get(stat_id));
 										stat_id++;
 									}
 								}
 							}
 						}
 					}
-
 				}
+
+				// 初期化
+				this.suffix_single = "";
+				this.suffix1 = "";
+				this.suffix2 = "";
+				this.suffix3 = "";
 			}
 		}
-
-		// Map保持後に1つずつ確認
-
 	}
 
 	/**
@@ -1065,8 +1297,7 @@ public class CollectScoringDataStandardValueLogic {
 
 		String where = "country = '" + country + "' and league = '" + league + "' "
 				+ "and data_situation_key = '" + data_situation_key + "'"
-				+ " and ha = '" + ha + "' and team = '" + team + "' and score_distribution = '" + score_distribution
-				+ "'";
+				+ " and ha = '" + ha + "' and team = '" + team + "'";
 
 		// nullの場合(score_distributionはTIME_DIFF, TIME_ACCUMULATIONの想定)
 		if (score_distribution == null) {
@@ -1092,10 +1323,10 @@ public class CollectScoringDataStandardValueLogic {
 			throw new SystemException("", "", "", "err: " + e);
 		}
 
+		collectScoringOutputDTO.setSelectResultList(selectResultList);
 		if (!selectResultList.isEmpty()) {
 			collectScoringOutputDTO.setId(selectResultList.get(0).get(0));
 			collectScoringOutputDTO.setExistFlg(true);
-			collectScoringOutputDTO.setSelectResultList(selectResultList);
 			return collectScoringOutputDTO;
 		}
 		collectScoringOutputDTO.setExistFlg(false);
@@ -1124,6 +1355,7 @@ public class CollectScoringDataStandardValueLogic {
 			throw new SystemException("", "", "", "err: " + e);
 		}
 
+		// 基本はデータが存在する前提
 		String scores = selectResultList.get(0).get(0);
 		if (scores == null) {
 			// nullはありえない
@@ -1199,29 +1431,41 @@ public class CollectScoringDataStandardValueLogic {
 	}
 
 	/**
-	 * 差分を比較し小さい方を返す
+	 * 差分を比較し小さい方を返す。その際対象の相手チーム名も状況に応じて設定する。
 	 * @param origin 比較元
 	 * @param sa 比較先
+	 * @param originTeam 起源チーム
+	 * @param compTeam 比較チーム
 	 * @return
 	 */
-	private double compareSaMin(double origin, double sa) {
+	private List<String> compareSaMin(double origin, double sa, String originTeam, String compTeam) {
+		List<String> result = new ArrayList<>();
 		if (origin > sa) {
+			originTeam = compTeam;
 			origin = sa;
 		}
-		return origin;
+		result.add(String.valueOf(origin));
+		result.add(originTeam);
+		return result;
 	}
 
 	/**
-	 * 差分を比較し大きい方を返す
+	 * 差分を比較し大きい方を返す。その際対象の相手チーム名も状況に応じて設定する。
 	 * @param origin 比較元
 	 * @param sa 比較先
+	 * @param originTeam 起源チーム
+	 * @param compTeam 比較チーム
 	 * @return
 	 */
-	private double compareSaMax(double origin, double sa) {
+	private List<String> compareSaMax(double origin, double sa, String originTeam, String compTeam) {
+		List<String> result = new ArrayList<>();
 		if (origin < sa) {
+			originTeam = compTeam;
 			origin = sa;
 		}
-		return origin;
+		result.add(String.valueOf(origin));
+		result.add(originTeam);
+		return result;
 	}
 
 	/**
@@ -1247,29 +1491,41 @@ public class CollectScoringDataStandardValueLogic {
 	}
 
 	/**
-	 * オリジンを比較し小さい方を返す
+	 * オリジンを比較し小さい方を返す。その際対象の相手チーム名も状況に応じて設定する。
 	 * @param origin 比較元
 	 * @param sa 比較先
+	 * @param originTeam 起源チーム
+	 * @param compTeam 比較チーム
 	 * @return
 	 */
-	private double compareMin(double origin, double sa) {
+	private List<String> compareMin(double origin, double sa, String originTeam, String compTeam) {
+		List<String> result = new ArrayList<>();
 		if (origin > sa) {
+			originTeam = compTeam;
 			origin = sa;
 		}
-		return origin;
+		result.add(String.valueOf(origin));
+		result.add(originTeam);
+		return result;
 	}
 
 	/**
-	 * オリジンを比較し大きい方を返す
+	 * オリジンを比較し大きい方を返す。その際対象の相手チーム名も状況に応じて設定する。
 	 * @param origin 比較元
 	 * @param sa 比較先
+	 * @param originTeam 起源チーム
+	 * @param compTeam 比較チーム
 	 * @return
 	 */
-	private double compareMax(double origin, double sa) {
+	private List<String> compareMax(double origin, double sa, String originTeam, String compTeam) {
+		List<String> result = new ArrayList<>();
 		if (origin < sa) {
+			originTeam = compTeam;
 			origin = sa;
 		}
-		return origin;
+		result.add(String.valueOf(origin));
+		result.add(originTeam);
+		return result;
 	}
 
 	/**

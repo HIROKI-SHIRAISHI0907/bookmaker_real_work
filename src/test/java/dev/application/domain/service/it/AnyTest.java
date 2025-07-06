@@ -2,10 +2,6 @@ package dev.application.domain.service.it;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -18,12 +14,7 @@ import dev.application.common.dto.FindBookOutputDTO;
 import dev.application.common.dto.ReadFileOutputDTO;
 import dev.application.common.exception.BusinessException;
 import dev.application.common.file.ReadThresHoldFile;
-import dev.application.common.logic.AverageStatsDetailCsvLogic;
-import dev.application.common.logic.AverageStatsDetailLogic;
-import dev.application.common.util.UniairColumnMapUtil;
-import dev.application.db.BookDataSelectWrapper;
-import dev.application.db.ExistsUpdCsvInfo;
-import dev.application.db.UniairConst;
+import dev.application.common.logic.CollectScoringDataStandardWrapperLogic;
 import dev.application.entity.ThresHoldEntity;
 
 @Tag("IT")
@@ -179,59 +170,63 @@ class AnyTest {
 		}
 
 		// レコード件数を取得する
-		BookDataSelectWrapper selectWrapper = new BookDataSelectWrapper();
-		int cnt = -1;
-		try {
-			cnt = selectWrapper.executeCountSelect(UniairConst.BM_M006, null);
-		} catch (Exception e) {
-			return;
-		}
+//		BookDataSelectWrapper selectWrapper = new BookDataSelectWrapper();
+//		int cnt = -1;
+//		try {
+//			cnt = selectWrapper.executeCountSelect(UniairConst.BM_M006, null);
+//		} catch (Exception e) {
+//			return;
+//		}
+//
+//		List<String> select6List = UniairColumnMapUtil.getKeyMap(UniairConst.BM_M006);
+//		String[] sel6List = new String[select6List.size()];
+//		for (int i = 0; i < select6List.size(); i++) {
+//			sel6List[i] = select6List.get(i);
+//		}
+//
+//		boolean updCsvFlg = ExistsUpdCsvInfo.exist();
+//		// 更新CSVテーブルに存在したものは更新対象
+//		List<List<String>> selectsList = new ArrayList<List<String>>();
+//		if (updCsvFlg) {
+//			selectsList = ExistsUpdCsvInfo.allCountryLeagueGet(UniairConst.BM_M028, null);
+//			cnt = selectsList.size();
+//		} else {
+//			selectsList = ExistsUpdCsvInfo.allCountryLeagueGet(UniairConst.BM_M006, "ALL");
+//		}
+//
+//		// スレッドプール生成（適宜スレッド数は調整）
+//		ExecutorService executor = Executors.newFixedThreadPool(cnt);
+//		List<Future<?>> futures = new ArrayList<>();
+//
+//		for (int i = 0; i < cnt; i++) {
+//			final String country = selectsList.get(i).get(0);
+//			final String category = selectsList.get(i).get(1);
+//			futures.add(executor.submit(() -> {
+//				try {
+//					AverageStatsDetailLogic averageStatsDetailLogic = new AverageStatsDetailLogic();
+//					averageStatsDetailLogic.updateRankingData(country, category);
+//				} catch (Exception e) {
+//					System.err.println("Error processing record country: " + country +
+//							", category: " + category);
+//					e.printStackTrace();
+//				}
+//			}));
+//		}
+//
+//		// スレッド終了待機
+//		executor.shutdown();
+//		try {
+//			executor.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+//		} catch (InterruptedException e) {
+//			Thread.currentThread().interrupt();
+//		}
 
-		List<String> select6List = UniairColumnMapUtil.getKeyMap(UniairConst.BM_M006);
-		String[] sel6List = new String[select6List.size()];
-		for (int i = 0; i < select6List.size(); i++) {
-			sel6List[i] = select6List.get(i);
-		}
+//		AverageStatsDetailCsvLogic averageStatsDetailCsvLogic = new AverageStatsDetailCsvLogic();
+//		averageStatsDetailCsvLogic.execute();
 
-		boolean updCsvFlg = ExistsUpdCsvInfo.exist();
-		// 更新CSVテーブルに存在したものは更新対象
-		List<List<String>> selectsList = new ArrayList<List<String>>();
-		if (updCsvFlg) {
-			selectsList = ExistsUpdCsvInfo.allCountryLeagueGet(UniairConst.BM_M028, null);
-			cnt = selectsList.size();
-		} else {
-			selectsList = ExistsUpdCsvInfo.allCountryLeagueGet(UniairConst.BM_M006, "ALL");
-		}
-
-		// スレッドプール生成（適宜スレッド数は調整）
-		ExecutorService executor = Executors.newFixedThreadPool(cnt);
-		List<Future<?>> futures = new ArrayList<>();
-
-		for (int i = 0; i < cnt; i++) {
-			final String country = selectsList.get(i).get(0);
-			final String category = selectsList.get(i).get(1);
-			futures.add(executor.submit(() -> {
-				try {
-					AverageStatsDetailLogic averageStatsDetailLogic = new AverageStatsDetailLogic();
-					averageStatsDetailLogic.updateRankingData(country, category);
-				} catch (Exception e) {
-					System.err.println("Error processing record country: " + country +
-							", category: " + category);
-					e.printStackTrace();
-				}
-			}));
-		}
-
-		// スレッド終了待機
-		executor.shutdown();
-		try {
-			executor.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-		}
-
-		AverageStatsDetailCsvLogic averageStatsDetailCsvLogic = new AverageStatsDetailCsvLogic();
-		averageStatsDetailCsvLogic.execute();
+		CollectScoringDataStandardWrapperLogic collectScoringDataStandardWrapperLogic =
+				new CollectScoringDataStandardWrapperLogic();
+		collectScoringDataStandardWrapperLogic.execute();
 
 		//		MakeStatisticsDataCsvLogic makeStatisticsDataCsvLogic = new MakeStatisticsDataCsvLogic();
 		//		makeStatisticsDataCsvLogic.execute();

@@ -1152,10 +1152,16 @@ public class CollectScoringDataStandardValueOnThreeLogic {
 										.equals(data_situation_key)) {
 									// 得点した試合のデータかそうでないか(ここまででcountry, leagueは同一の想定)
 									// スコア分布(TIME_ACCUMULATION用)
-									String score_distribution = (chkScore(
-											teams, opposite_teams, ha))
-													? CollectScoringDataStandardValueUtil.GET_SCORE
-													: CollectScoringDataStandardValueUtil.NO_GET_SCORE;
+									String score_distribution = "";
+									try {
+										score_distribution = (chkScore(
+												teams, opposite_teams, ha))
+														? CollectScoringDataStandardValueUtil.GET_SCORE
+														: CollectScoringDataStandardValueUtil.NO_GET_SCORE;
+									} catch (BusinessException e) {
+										System.out.println("chkScore err: "+ e);
+										return;
+									}
 
 									// 比較方針: teamを主軸にしたときの同一時間帯における相手チーム対戦時のteamの得点の特徴量累積を取得
 									CollectScoringOutputDTO collectScoringOutputDTO = getData(country, league, team, ha,
@@ -1445,6 +1451,11 @@ public class CollectScoringDataStandardValueOnThreeLogic {
 		}
 
 		// 基本はデータが存在する前提
+		if (selectResultList == null || selectResultList.isEmpty() ||
+				selectResultList.get(0) == null || selectResultList.get(0).isEmpty()) {
+			throw new BusinessException("", "", "", "selectResultList not exist err: ");
+		}
+
 		String scores = selectResultList.get(0).get(0);
 		if (scores == null) {
 			// nullはありえない

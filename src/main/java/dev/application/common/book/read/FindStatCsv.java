@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.stereotype.Component;
@@ -36,9 +37,6 @@ public class FindStatCsv {
 	//@Value("${bmbusiness.findbookcounter:1}")
 	//private int findBookCounter = 200;
 
-	/** output_ */
-	private static final String _TIME = "-TIME";
-
 	/** .xlsx */
 	private static final String CSV = ".csv";
 
@@ -60,13 +58,13 @@ public class FindStatCsv {
 			copyPath = inputDTO.getCopyPath();
 			try {
 				// コピー先が存在しなければ作成
-			    Path p2 = Paths.get(copyPath);
-			    if (!Files.exists(p2)) {
-			    	Files.createDirectory(p2);
-			    }
+				Path p2 = Paths.get(copyPath);
+				if (!Files.exists(p2)) {
+					Files.createDirectory(p2);
+				}
 				// 2秒ほど待機
 				Thread.sleep(1200);
-			} catch (IOException | InterruptedException e){
+			} catch (IOException | InterruptedException e) {
 				readBookOutputDTO.setExceptionProject(PROJECT_NAME);
 				readBookOutputDTO.setExceptionClass(CLASS_NAME);
 				readBookOutputDTO.setExceptionMethod(METHOD_NAME);
@@ -80,7 +78,7 @@ public class FindStatCsv {
 		List<String> bookList = null;
 		// ファイルの存在確認
 		try {
-			bookList = getBookFiles(findPath, inputDTO.getTargetFile());
+			bookList = getBookFiles(findPath, inputDTO.getTargetFile(), inputDTO.getContains());
 		} catch (IOException e) {
 			readBookOutputDTO.setExceptionProject(PROJECT_NAME);
 			readBookOutputDTO.setExceptionClass(CLASS_NAME);
@@ -129,19 +127,22 @@ public class FindStatCsv {
 	 * @param targetFile 対象ファイル名
 	 * @throws IOException IOException
 	 */
-	private static List<String> getBookFiles(String path, String targetFile) throws IOException {
+	private static List<String> getBookFiles(String path, String targetFile, String[] contains) throws IOException {
+		List<String> targets = Arrays.asList(contains);
 		List<String> bookPathList = new ArrayList<>();
 		List<Path> bookPathPathList = new ArrayList<>();
 		Files.walk(Paths.get(path))
-			.filter(Files::isRegularFile) // CSVファイルのみ
-			.filter(pathStr -> pathStr.toString().endsWith(CSV) ||
-					pathStr.toString().contains(_TIME))
-			.forEach(bookPathPathList::add);
+				.filter(Files::isRegularFile) // CSVファイルのみ
+				.filter(pathStr -> pathStr.toString().endsWith(CSV))
+				.forEach(bookPathPathList::add);
 		for (Path pathStr : bookPathPathList) {
 			if (!pathStr.toString().contains("average_stats/")) {
 				continue;
 			}
-			bookPathList.add(pathStr.toString());
+			// その文字列が全て含まれているか
+			if (targets.stream().allMatch(s -> pathStr.toString().contains(s))) {
+				bookPathList.add(pathStr.toString());
+			}
 		}
 		return bookPathList;
 	}

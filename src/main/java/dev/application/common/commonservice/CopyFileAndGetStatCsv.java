@@ -20,7 +20,7 @@ public class CopyFileAndGetStatCsv {
 	 * @param copyPath コピー先パス
 	 * @return
 	 */
-	public List<String> execute(String path, String copyPath) {
+	public List<String> execute(String path, String copyPath, String[] contains) {
 		// コピー先パスを保存
 		String originalCopyPath = copyPath;
 		// フォルダに残っている場合削除する
@@ -36,6 +36,7 @@ public class CopyFileAndGetStatCsv {
 		findBookInputDTO.setDataPath(path);
 		findBookInputDTO.setCopyPath(originalCopyPath);
 		findBookInputDTO.setCopyFlg(false);
+		findBookInputDTO.setContains(contains);
 		FindStatCsv findStatCsv = new FindStatCsv();
 		FindBookOutputDTO findBookOutputDTO = findStatCsv.execute(findBookInputDTO);
 		//FindBookOutputDTO findBookOutputDTO = this.findBook.execute(findBookInputDTO);

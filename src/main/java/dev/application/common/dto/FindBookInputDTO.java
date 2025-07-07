@@ -30,4 +30,9 @@ public class FindBookInputDTO {
 	 */
 	private String targetFile;
 
+	/**
+	 * 含まれる内容
+	 */
+	private String[] contains;
+
 }

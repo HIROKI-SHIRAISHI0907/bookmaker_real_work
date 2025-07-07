@@ -43,19 +43,24 @@ public class CollectScoringDataStandardValueOnThreeLogic {
 	}
 
 	/**
-	 * スレッドセーフ前提・suffix
+	 * スレッドセーフ前提・suffix シングルトンの場合は要注意
 	 */
 	private String suffix1 = "";
 
 	/**
-	 * スレッドセーフ前提・suffix
+	 * スレッドセーフ前提・suffix シングルトンの場合は要注意
 	 */
 	private String suffix2 = "";
 
 	/**
-	 * スレッドセーフ前提・suffix
+	 * スレッドセーフ前提・suffix シングルトンの場合は要注意
 	 */
 	private String suffix3 = "";
+
+	/**
+	 * 共有ロック
+	 */
+	private final Object registerLock = new Object();
 
 	/**
 	 * 実行メソッド
@@ -175,7 +180,7 @@ public class CollectScoringDataStandardValueOnThreeLogic {
 							.add(numericFeature);
 
 				} catch (NumberFormatException e) {
-					System.err.println("format err: " + e);
+					//System.err.println("format err: " + e);
 				}
 			}
 		}
@@ -195,7 +200,7 @@ public class CollectScoringDataStandardValueOnThreeLogic {
 			}
 		});
 
-		System.out.println("===== 平均・標準偏差 (Home/Away別) =====");
+		//System.out.println("===== 平均・標準偏差 (Home/Away別) =====");
 		for (String time : sortedTimes) {
 			Map<String, List<Double>> mapByHA = featureValuesByTimeAndHA.get(time);
 			for (String horA : mapByHA.keySet()) {
@@ -218,13 +223,13 @@ public class CollectScoringDataStandardValueOnThreeLogic {
 					variance += Math.pow(v - avg, 2);
 				double stdDev = Math.sqrt(variance / filtered.size());
 
-				System.out.printf("時間帯: %s (%s), 平均%s: %.3f, 標準偏差: %.3f, 件数: %d%n",
-						time, horA, feature, avg, stdDev, filtered.size());
+				//				System.out.printf("時間帯: %s (%s), 平均%s: %.3f, 標準偏差: %.3f, 件数: %d%n",
+				//						time, horA, feature, avg, stdDev, filtered.size());
 			}
 		}
 
 		// クラスタリング（平均で昇順）
-		System.out.println("\n===== 時間帯クラスタリング（昇順） =====");
+		//System.out.println("\n===== 時間帯クラスタリング（昇順） =====");
 		class TimeStats {
 			double avg;
 			double stdDev;
@@ -268,10 +273,10 @@ public class CollectScoringDataStandardValueOnThreeLogic {
 		}));
 
 		// 出力
-		for (TimeStats stats : timeStatsList) {
-			System.out.printf("時間帯: %s, 平均: %.3f, 標準偏差: %.3f, 件数: %d%n",
-					stats.time, stats.avg, stats.stdDev, stats.count);
-		}
+		//		for (TimeStats stats : timeStatsList) {
+		//			System.out.printf("時間帯: %s, 平均: %.3f, 標準偏差: %.3f, 件数: %d%n",
+		//					stats.time, stats.avg, stats.stdDev, stats.count);
+		//		}
 
 		// 閾値範囲・刻み幅設定
 		double thresholdStart = 0.2;
@@ -284,7 +289,7 @@ public class CollectScoringDataStandardValueOnThreeLogic {
 		}
 
 		// 時間帯別：得点率分析（以上）
-		System.out.println("\n===== 閾値ごとの得点率分析（以上・時間帯別） =====");
+		//System.out.println("\n===== 閾値ごとの得点率分析（以上・時間帯別） =====");
 		for (String time : sortedTimes) {
 			List<Double> values = flatFeatureValuesByTime.get(time);
 			if (values == null || values.isEmpty())
@@ -294,7 +299,7 @@ public class CollectScoringDataStandardValueOnThreeLogic {
 			if (filtered.isEmpty())
 				continue;
 
-			System.out.println("▼ 時間帯: " + time);
+			//System.out.println("▼ 時間帯: " + time);
 			for (double threshold : thresholds) {
 				int total = 0, scored = 0;
 				for (double v : filtered) {
@@ -303,12 +308,12 @@ public class CollectScoringDataStandardValueOnThreeLogic {
 						scored++;
 				}
 				double rate = (total == 0) ? 0.0 : (scored * 100.0 / total);
-				System.out.printf("　閾値 %.2f 以上: %d / %d 得点率 %.2f%%%n", threshold, scored, total, rate);
+				//System.out.printf("　閾値 %.2f 以上: %d / %d 得点率 %.2f%%%n", threshold, scored, total, rate);
 			}
 		}
 
 		// 時間帯別：得点率分析（以下）
-		System.out.println("\n===== 閾値ごとの得点率分析（以下・時間帯別） =====");
+		//System.out.println("\n===== 閾値ごとの得点率分析（以下・時間帯別） =====");
 		for (String time : sortedTimes) {
 			List<Double> values = flatFeatureValuesByTime.get(time);
 			if (values == null || values.isEmpty())
@@ -318,7 +323,7 @@ public class CollectScoringDataStandardValueOnThreeLogic {
 			if (filtered.isEmpty())
 				continue;
 
-			System.out.println("▼ 時間帯: " + time);
+			//System.out.println("▼ 時間帯: " + time);
 			for (double threshold : thresholds) {
 				int total = 0, scored = 0;
 				for (double v : filtered) {
@@ -327,7 +332,7 @@ public class CollectScoringDataStandardValueOnThreeLogic {
 						scored++;
 				}
 				double rate = (total == 0) ? 0.0 : (scored * 100.0 / total);
-				System.out.printf("　閾値 %.2f 以下: %d / %d 得点率 %.2f%%%n", threshold, scored, total, rate);
+				//System.out.printf("　閾値 %.2f 以下: %d / %d 得点率 %.2f%%%n", threshold, scored, total, rate);
 			}
 		}
 
@@ -432,7 +437,7 @@ public class CollectScoringDataStandardValueOnThreeLogic {
 				List<Integer> indices = entry.getValue();
 				Boolean[] scoreFlags = haToScoreFlags.get(ha);
 
-				System.out.println("=== 処理対象: " + ha + " の試合 ===");
+				//System.out.println("=== 処理対象: " + ha + " の試合 ===");
 
 				// data_situation_key: ACCUMULATION
 				for (String data_situation_key : data_situation_key_list) {
@@ -637,9 +642,9 @@ public class CollectScoringDataStandardValueOnThreeLogic {
 								List<String> body2 = bodyList2.get(indMain2);
 								// csv1名のチーム名とcsv2データの相手チーム名,csv2名のチーム名とcsv1データの相手チーム名の組み合わせが等しいこと
 								String connectTeam1 = ("H".equals(ha)) ? team + "-" + body1.get(0)
-										: team2 + "-" + body2.get(0);
-								String connectTeam2 = ("H".equals(ha)) ? body2.get(0) + "-" + team2
 										: body1.get(0) + "-" + team;
+								String connectTeam2 = ("H".equals(ha)) ? body2.get(0) + "-" + team2
+										: team2 + "-" + body2.get(0);
 								if (!connectTeam1.equals(connectTeam2)) {
 									continue;
 								}
@@ -711,7 +716,7 @@ public class CollectScoringDataStandardValueOnThreeLogic {
 										String get_stat_ave_cnt = data3.get(1);
 										String get_stat_ave_try = data3.get(2);
 										List<String> dataSub3 = ExecuteMainUtil.getExceptForPercent(get_stat_ave_per);
-										get_stat_max_per = dataSub3.get(0);
+										get_stat_ave_per = dataSub3.get(0);
 										this.suffix3 = dataSub3.get(1);
 										int minus_get_stat_count = Integer.parseInt(stat_split[3]);
 										int plus_get_stat_count = Integer.parseInt(stat_split[4]);
@@ -1021,7 +1026,7 @@ public class CollectScoringDataStandardValueOnThreeLogic {
 										String get_stat_ave_cnt = data3.get(1);
 										String get_stat_ave_try = data3.get(2);
 										List<String> dataSub3 = ExecuteMainUtil.getExceptForPercent(get_stat_ave_per);
-										get_stat_max_per = dataSub3.get(0);
+										get_stat_ave_per = dataSub3.get(0);
 										this.suffix3 = dataSub3.get(1);
 										int minus_get_stat_count = Integer.parseInt(stat_split[3]);
 										int plus_get_stat_count = Integer.parseInt(stat_split[4]);
@@ -1159,8 +1164,8 @@ public class CollectScoringDataStandardValueOnThreeLogic {
 														? CollectScoringDataStandardValueUtil.GET_SCORE
 														: CollectScoringDataStandardValueUtil.NO_GET_SCORE;
 									} catch (BusinessException e) {
-										System.out.println("chkScore err: "+ e);
-										return;
+										System.out.println("single chkScore err: " + connectTeam1 + ", err: " + e);
+										continue;
 									}
 
 									// 比較方針: teamを主軸にしたときの同一時間帯における相手チーム対戦時のteamの得点の特徴量累積を取得
@@ -1486,6 +1491,7 @@ public class CollectScoringDataStandardValueOnThreeLogic {
 	private void registerData(String country, String league, String team, String ha,
 			String data_situation_key, String time_key, String score_distribution, String stat_name, String feature,
 			boolean updFlg, String id) {
+		//synchronized (registerLock) {
 		if (updFlg) {
 			StringBuilder sBuilder = new StringBuilder();
 			sBuilder.append(" " + stat_name + " = '" + feature + "'");
@@ -1528,6 +1534,7 @@ public class CollectScoringDataStandardValueOnThreeLogic {
 			System.out.println("BM_M030に登録しました。country: " + country + ", league: " + league +
 					", team: " + team + ", ha: " + ha + ", 登録データ: " + stat_name);
 		}
+		//}
 	}
 
 	/**
